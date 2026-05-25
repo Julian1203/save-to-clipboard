@@ -1,4 +1,4 @@
-package com.example.savetoclipboard
+package com.example.architecture.templates
 
 import android.app.Activity
 import android.content.ClipData
@@ -11,10 +11,23 @@ import android.widget.Toast
 
 class MainActivity : Activity() {
 
+    private var hasProcessedIntent = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        handleIncomingIntent(intent)
-        finish()
+        // Let the transparent window load without finishing immediately
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        
+        // Android 10+ requires the app window to have focus before it 
+        // is allowed to write to or read from the system clipboard.
+        if (hasFocus && !hasProcessedIntent) {
+            hasProcessedIntent = true
+            handleIncomingIntent(intent)
+            finish() // Safe to close the activity after copying
+        }
     }
 
     private fun handleIncomingIntent(intent: Intent?) {
